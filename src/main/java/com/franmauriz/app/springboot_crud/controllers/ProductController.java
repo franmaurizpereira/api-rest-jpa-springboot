@@ -10,8 +10,16 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+
+
 
 
 
@@ -30,13 +38,39 @@ public class ProductController {
         return products;
     }
 
-    @GetMapping("/id/{id}")
-    public Optional<Product> getfindById(@PathVariable("id") Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getfindById(@PathVariable("id") Long id) {
         Optional<Product> product = productservice.findById(id);
         if(product.isPresent()){
-            return product;
+            return ResponseEntity.ok(product.orElseThrow());
         }else{
-            return Optional.empty();
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("")
+    public ResponseEntity<Product> create(@RequestBody Product entity) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productservice.save(entity));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product entity){
+        Optional<Product> product = productservice.update(id, entity);
+        if(product.isPresent()){
+            return ResponseEntity.status(HttpStatus.CREATED).body(product.orElseThrow());
+        }else{
+            return ResponseEntity.notFound().build();
+        }        
+    }
+    
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+        Optional<Product> optionalproduct = productservice.delete(id);
+        if(optionalproduct.isPresent()){
+            return ResponseEntity.ok(optionalproduct.orElseThrow());
+        }else{
+            return ResponseEntity.notFound().build();
         }
     }
     
