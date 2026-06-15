@@ -1,17 +1,23 @@
 package com.franmauriz.app.springboot_crud.controllers;
 
+import com.franmauriz.app.springboot_crud.repositories.ProductRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.franmauriz.app.springboot_crud.entities.Product;
 import com.franmauriz.app.springboot_crud.services.ProductService;
 
+import jakarta.validation.Valid;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,8 +35,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 @RequestMapping("/product")
 public class ProductController {
 
+    private final ProductRepository productRepository;
     @Autowired
     private ProductService productservice;
+
+    ProductController(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     @GetMapping("/all")
     public List<Product> getfindAll() {
@@ -49,12 +60,18 @@ public class ProductController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Product> create(@RequestBody Product entity) {
+    public ResponseEntity<?> create(@Valid @RequestBody Product entity, BindingResult result) {
+        if(result.hasFieldErrors()){
+            return validation(result);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(productservice.save(entity));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product entity){
+    public ResponseEntity<?> update(@Valid @RequestBody Product entity, BindingResult result,@PathVariable Long id){
+        if(result.hasFieldErrors()){
+           return validation(result);
+        }
         Optional<Product> product = productservice.update(id, entity);
         if(product.isPresent()){
             return ResponseEntity.status(HttpStatus.CREATED).body(product.orElseThrow());
@@ -63,7 +80,7 @@ public class ProductController {
         }        
     }
     
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {
         Optional<Product> optionalproduct = productservice.delete(id);
@@ -72,6 +89,14 @@ public class ProductController {
         }else{
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private ResponseEntity<?> validation(BindingResult result) {
+        Map<String,String> errors = new HashMap<>();
+        result.getFieldErrors().forEach(err -> {
+            errors.put(err.getField(), "El campo " + err.getField() + " " + err.getDefaultMessage());
+        });
+        return ResponseEntity.badRequest().body(errors);
     }
     
     
