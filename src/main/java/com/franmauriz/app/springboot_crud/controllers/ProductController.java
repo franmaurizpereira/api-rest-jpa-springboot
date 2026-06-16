@@ -26,22 +26,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 
 
-
-
-
-
-
 @RestController
 @RequestMapping("/product")
 public class ProductController {
 
-    private final ProductRepository productRepository;
+    
     @Autowired
     private ProductService productservice;
 
-    ProductController(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
+
 
     @GetMapping("/all")
     public List<Product> getfindAll() {
