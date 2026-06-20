@@ -1,9 +1,10 @@
 package com.franmauriz.app.springboot_crud.controllers;
 
-import com.franmauriz.app.springboot_crud.repositories.ProductRepository;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.franmauriz.app.springboot_crud.ProductValidation;
 import com.franmauriz.app.springboot_crud.entities.Product;
 import com.franmauriz.app.springboot_crud.services.ProductService;
 
@@ -34,6 +35,9 @@ public class ProductController {
     @Autowired
     private ProductService productservice;
 
+    @Autowired
+    private  ProductValidation validation;
+    
 
 
     @GetMapping("/all")
@@ -54,6 +58,7 @@ public class ProductController {
 
     @PostMapping("")
     public ResponseEntity<?> create(@Valid @RequestBody Product entity, BindingResult result) {
+        validation.validate(entity, result);
         if(result.hasFieldErrors()){
             return validation(result);
         }
@@ -62,6 +67,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@Valid @RequestBody Product entity, BindingResult result,@PathVariable Long id){
+        validation.validate(entity, result);
         if(result.hasFieldErrors()){
            return validation(result);
         }
